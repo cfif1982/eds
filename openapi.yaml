@@ -26,18 +26,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewDocument'
+              $ref: "#/components/schemas/NewDocument"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QRCode'          
-        '400':
+                $ref: "#/components/schemas/QRCode"
+        "400":
           description: Invalid input
-        '422':
+        "422":
           description: Validation exception
       security:
         - api_key: []
@@ -52,20 +52,20 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/DocumentUpload'
+              $ref: "#/components/schemas/DocumentUpload"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Document'          
-        '400':
+                $ref: "#/components/schemas/Document"
+        "400":
           description: Invalid ID supplied
-        '404':
+        "404":
           description: Document not found
-        '422':
+        "422":
           description: Validation exception
       security:
         - api_key: []
@@ -85,15 +85,15 @@ paths:
             type: integer
             format: byte16
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Document'          
-        '400':
+                $ref: "#/components/schemas/Document"
+        "400":
           description: Invalid ID supplied
-        '404':
+        "404":
           description: Document not found
       security:
         - api_key: []
@@ -112,7 +112,7 @@ paths:
             type: integer
             format: byte16
       responses:
-        '400':
+        "400":
           description: Invalid document value
       security:
         - api_key: []
@@ -128,14 +128,14 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Signature'
+              $ref: "#/components/schemas/Signature"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful operation
-        '400':
+        "400":
           description: Invalid input
-        '422':
+        "422":
           description: Validation exception
       security:
         - api_key: []
@@ -152,14 +152,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DocumentCorrect'
+              $ref: "#/components/schemas/DocumentCorrect"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful operation
-        '400':
+        "400":
           description: Invalid input
-        '422':
+        "422":
           description: Validation exception
       security:
         - api_key: []
@@ -175,18 +175,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewUser'
+              $ref: "#/components/schemas/NewUser"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'          
-        '400':
+                $ref: "#/components/schemas/User"
+        "400":
           description: Invalid input
-        '422':
+        "422":
           description: Validation exception
       security:
         - api_key: []
@@ -201,20 +201,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: "#/components/schemas/User"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'          
-        '400':
+                $ref: "#/components/schemas/User"
+        "400":
           description: Invalid ID supplied
-        '404':
+        "404":
           description: User not found
-        '422':
+        "422":
           description: Validation exception
       security:
         - api_key: []
@@ -234,15 +234,15 @@ paths:
             type: integer
             format: byte16
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'          
-        '400':
+                $ref: "#/components/schemas/User"
+        "400":
           description: Invalid UUID supplied
-        '404':
+        "404":
           description: User not found
       security:
         - api_key: []
@@ -261,7 +261,7 @@ paths:
             type: integer
             format: byte16
       responses:
-        '400':
+        "400":
           description: Invalid user value
       security:
         - api_key: []
@@ -270,16 +270,16 @@ components:
     NewDocument:
       type: object
       properties:
-        creator_uuid:
-          type: integer
-          format: byte16
+        creator_id:
+          type: string
+          format: uuid
           example: 53aa35c8-e659-44b2-882f-f6056e443c99
     QRCode:
       type: object
       properties:
         qr_code:
-         type: string
-         example: /21aa35c8-e659-44b2-882f-f6056e443a33/qr.jpg
+          type: string
+          example: /21aa35c8-e659-44b2-882f-f6056e443a33/qr.jpg
     DocumentUpload:
       type: object
       properties:
@@ -288,65 +288,73 @@ components:
           items:
             type: string
             format: binary
-            example: 
+            example:
               - "main_file.doc"
               - "app.doc"
         metadata:
           type: object
           properties:
-            document_uuid:
-              type: integer
-              format: byte16
+            document_id:
+              type: string
+              format: uuid
               example: 21aa35c8-e659-44b2-882f-f6056e443a33
-            creator_uuid:
-              type: integer
-              format: byte16
+            creator_id:
+              type: string
+              format: uuid
               example: 53aa35c8-e659-44b2-882f-f6056e443c99
-            signers_uuid:
+            signers_id:
               type: array
               items:
-                type: integer
-                format: byte16
-                example: 
-                 - 64aa35c8-e659-44b2-882f-f6056e443e88
-                 - 75aa35c8-e659-44b2-882f-f6056e443d67
+                type: string
+                format: uuid
+                example:
+                  - 64aa35c8-e659-44b2-882f-f6056e443e88
+                  - 75aa35c8-e659-44b2-882f-f6056e443d67
     Document:
       type: object
       properties:
-        document_uuid:
-         type: integer
-         format: byte16
-         example: 21aa35c8-e659-44b2-882f-f6056e443a33
-        creator_uuid:
-         type: integer
-         format: byte16
-         example: 53aa35c8-e659-44b2-882f-f6056e443c99
-        signers_uuid:
-         type: array
-         items:
-           type: integer
-           format: byte16
-           example: 
-            - 64aa35c8-e659-44b2-882f-f6056e443e88
-            - 75aa35c8-e659-44b2-882f-f6056e443d67
+        document_id:
+          type: string
+          format: uuid
+          example: 21aa35c8-e659-44b2-882f-f6056e443a33
+        creator_id:
+          type: string
+          format: uuid
+          example: 53aa35c8-e659-44b2-882f-f6056e443c99
+        signers_id:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example:
+              - 64aa35c8-e659-44b2-882f-f6056e443e88
+              - 75aa35c8-e659-44b2-882f-f6056e443d67
         files:
-         type: array
-         items:
-             type: string
-             format: binary
-             example: 
-               - "main_file.doc"
-               - "app.doc"
+          type: array
+          items:
+            type: string
+            format: binary
+            example:
+              - "main_file.doc"
+              - "app.doc"
+        signatures:
+          type: array
+          items:
+            type: string
+            format: binary
+            example:
+              - "main_file.key"
+              - "app.key"
     DocumentCorrect:
       type: object
       properties:
-        document_uuid:
-         type: integer
-         format: byte16
-         example: 21aa35c8-e659-44b2-882f-f6056e443a33
+        document_id:
+          type: string
+          format: uuid
+          example: 21aa35c8-e659-44b2-882f-f6056e443a33
         message:
-         type: string
-         example: "change document number" 
+          type: string
+          example: "change document number"
     Signature:
       type: object
       properties:
@@ -355,19 +363,19 @@ components:
           items:
             type: string
             format: binary
-            example: 
+            example:
               - "main_file.key"
               - "app.key"
         metadata:
           type: object
           properties:
-            document_uuid:
-              type: integer
-              format: byte16
+            document_id:
+              type: string
+              format: uuid
               example: 53aa35c8-e659-44b2-882f-f6056e443c99
-            signer_uuid:
-              type: integer
-              format: byte16
+            signer_id:
+              type: string
+              format: uuid
               example: 64aa35c8-e659-44b2-882f-f6056e443e88
     NewUser:
       type: object
@@ -384,9 +392,9 @@ components:
     User:
       type: object
       properties:
-        uuid:
-          type: integer
-          format: byte16
+        id:
+          type: string
+          format: uuid
           example: 53aa35c8-e659-44b2-882f-f6056e443c99
         email:
           type: string

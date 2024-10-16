@@ -1,0 +1,9 @@
+env: "local" # local, prod
+grpc:
+  port: 44441
+database:
+  user: "postgres"
+  password: "123"
+  host: "localhost"
+  table: "eds"
+  request_timeout: 5

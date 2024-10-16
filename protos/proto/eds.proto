@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package eds;
+
+option go_package = "github.com/cfif1982/eds/pkg/grpc;edsv1";
+
+service EDS{
+  rpc AddNewDocument (AddNewDocumentRequest) returns (AddNewDocumentResponse);
+  rpc GetDocumentByID (GetDocumentByIDRequest) returns (GetDocumentByIDResponse);
+}
+
+message AddNewDocumentRequest{
+  string creator_id = 1;
+} 
+
+message AddNewDocumentResponse{
+  string qr_code = 1;
+} 
+
+message GetDocumentByIDRequest{
+  string document_id = 1;
+} 
+
+message GetDocumentByIDResponse{
+  string document_id = 1;
+  string creator_id = 2;
+  repeated string signers_id = 3;
+  repeated string files_id = 4;
+  repeated string signatures_id = 5;
+} 
