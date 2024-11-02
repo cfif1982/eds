@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
-	"path/filepath"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
@@ -39,21 +38,9 @@ func NewPostgresRepo(log *slog.Logger, cfg *config.Config) (*PostgresRepo, error
 		log.Info(err.Error())
 	}
 
-	projectRoot, _ := filepath.Abs("../../")
-	migrationFolder := filepath.Join(projectRoot, "migrations")
-
-	// // узнаю текущую папку, чтобы передать путь к папке с миграциями
-	// ex, err := os.Executable()
-	// if err != nil {
-	// 	log.Info(err.Error())
-	// }
-	// exPath := filepath.Dir(ex)
-
-	// exPath += "/migrations"
-
-	err = goose.Up(db, migrationFolder)
+	err = goose.Up(db, cfg.MigrationFolder)
 	if err != nil {
-		log.Info(err.Error() + ": " + migrationFolder)
+		log.Info(err.Error() + ": " + cfg.MigrationFolder)
 	}
 
 	log.Info("migrating bank database finished")

@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	Env  string     `yaml:"env"  env-default:"local"`
-	GRPC GRPCConfig `yaml:"grpc"`
-	DB   Database   `yaml:"database"`
+	Env             string     `yaml:"env"  env-default:"local"` // где мы находимся
+	GRPC            GRPCConfig `yaml:"grpc"`                     // настройки grpc
+	DB              Database   `yaml:"database"`                 // настройки базы данных
+	MigrationFolder string     `yaml:"maigration_folder"`        // папка с миграциями
 }
 
 type GRPCConfig struct {

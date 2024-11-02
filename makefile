@@ -23,5 +23,11 @@ gprs: clean_grpc
 	$(MKDIR_CMD)
 	protoc -I $(PROTO_DIR) $(PROTO_FILE) --go_out=$(PROTO_GEN_DIR) --go_opt=paths=source_relative --go-grpc_out=$(PROTO_GEN_DIR) --go-grpc_opt=paths=source_relative
 
+docker_up:
+	docker-compose up
+
+build:
+	go build -o eds.exe  ./cmd/eds
+
 # Цель по умолчанию
 all: gprs
