@@ -2,15 +2,11 @@ package main
 
 import (
 	"log/slog"
-	"os"
 
-	"github.com/cfif1982/eds/bootstraper"
 	"github.com/cfif1982/eds/internal/config"
-)
-
-const (
-	envLocal = "local"
-	envProd  = "prod"
+	"github.com/cfif1982/eds/internal/eds/bootstraper"
+	migratorbs "github.com/cfif1982/eds/internal/migrator/bootstraper"
+	logger "github.com/cfif1982/eds/internal/pkg/logger/slog"
 )
 
 func main() {
@@ -19,32 +15,19 @@ func main() {
 	// поэтому вызываем метод MustLoad()
 	cfg := config.MustLoad()
 
-	log := setupLogger(cfg.Env)
+	log := logger.SetupLogger(cfg.Env)
 
-	log.Info("starting application", slog.Any("config", cfg))
+	// запуск мигратора
+	mgbs := migratorbs.NewBootstraper(cfg, log) // создаем bootsraper мигратора
+	mgbs.Run()                                  // запуск bootstraper мигратора
 
-	// создаем bootsraper
+	log.Info("starting eds", slog.Any("config", cfg))
+
+	// создаем bootsraper приложения
 	bs := bootstraper.NewBootstraper(cfg, log)
 
-	bs.Run() // запуск bootstraper
-}
-
-// настройка логгера
-func setupLogger(env string) *slog.Logger {
-	var log *slog.Logger
-
-	switch env {
-	case envLocal:
-		log = slog.New(
-			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
-		)
-	case envProd:
-		log = slog.New(
-			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
-		)
-	}
-
-	return log
+	// запуск bootstraper приложения
+	bs.Run()
 }
 
 // генерирую grpc
