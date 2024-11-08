@@ -26,3 +26,4 @@ vendor/
 requests.http
 
 bin/
+config/local.yaml

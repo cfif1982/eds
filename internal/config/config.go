@@ -22,7 +22,7 @@ type Database struct {
 	User       string `yaml:"user"`
 	Password   string `yaml:"password"`
 	Host       string `yaml:"host"`
-	Name       string `yaml:"table"`
+	Name       string `yaml:"name"`
 	ReqTimeOut int    `yaml:"request_timeout"` // в секундах
 }
 
