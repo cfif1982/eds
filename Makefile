@@ -26,8 +26,20 @@ gprs: clean_grpc
 docker_up:
 	docker-compose up
 
-build:
-	go build -o eds.exe  ./cmd/eds
+tidy:
+	go mod tidy
+
+build_windows:
+	go build -o bin/eds.exe  ./cmd/eds
+
+build_migrator_windows:
+	go build -o bin/migrator.exe  ./cmd/migrator
+
+build_linux:
+	go build -o bin/eds  ./cmd/eds
+
+build_migrator_linux:
+	go build -o bin/migrator  ./cmd/migrator
 
 # Цель по умолчанию
 all: gprs

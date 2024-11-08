@@ -1,5 +1,5 @@
 env: "prod" # local, prod
-maigration_folder: "./migrations" # папка с миграциями
+maigration_folder: "../../internal/migrator/migrations" # папка с миграциями
 grpc:
   port: 44441
 database:
