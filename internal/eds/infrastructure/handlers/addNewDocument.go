@@ -25,7 +25,16 @@ func (h *Handlers) AddNewDocument(
 	}
 
 	// вызываем UseCase добавления документа
-	result, err := h.controller.AddNewDocument(req.GetCreatorId())
+	// конвертируем данные из grpc в domain
+	// это коммент на тот случай, когда будем больше данных получать
+	// сейчас просто конвертируем строку в uuid
+	creatorUUID, err := uuid.Parse(req.GetCreatorId())
+	if err != nil {
+		return nil, err
+	}
+
+	qrCode, err := h.docUseCases.Add(creatorUUID)
+
 	if err != nil {
 		// TODO: тут нужно доабваить более широкую обработку ошибки
 		// Например, такой пользователь уже существует и т.д.
@@ -35,7 +44,12 @@ func (h *Handlers) AddNewDocument(
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return result, nil
+	// конвертируем данные из domain в grpc для ответа.
+	result := edsv1.AddNewDocumentResponse{
+		QrCode: qrCode,
+	}
+
+	return &result, nil
 }
 
 // проверяем входящие данные.

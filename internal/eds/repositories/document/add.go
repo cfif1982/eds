@@ -3,13 +3,12 @@ package document
 import (
 	"context"
 	"errors"
+	"github.com/cfif1982/eds/internal/models"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-
-	"github.com/cfif1982/eds/internal/models"
 )
 
 // добавить документ
@@ -19,6 +18,11 @@ func (b *PostgresRepo) Add(doc *models.Document) error {
 
 	// создаем запрос на добавление документа
 	// Q: нужно ли здесь указывать все поля из модели?
+	//query := `INSERT INTO documents ("id", "creator_id", "date") VALUES (:id, :creator_id, :date)`
+
+	// sqlx helps us to fill  from models.Document
+	// sqlc
+
 	query, args, _ := psq.
 		Insert("documents").Columns("id", "creator_id", "date").
 		Values(doc.ID(), doc.Creator(), doc.Date()).
