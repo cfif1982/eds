@@ -4,7 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/cfif1982/eds/internal/config"
-	"github.com/cfif1982/eds/internal/eds/bootstraper"
+	"github.com/cfif1982/eds/internal/migrator/bootstraper"
 	logger "github.com/cfif1982/eds/internal/pkg/logger/slog"
 )
 

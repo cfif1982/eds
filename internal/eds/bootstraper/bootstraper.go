@@ -11,7 +11,6 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/cfif1982/eds/internal/config"
-	"github.com/cfif1982/eds/internal/eds/controller"
 	"github.com/cfif1982/eds/internal/eds/infrastructure/handlers"
 	"github.com/cfif1982/eds/internal/eds/infrastructure/server"
 	docRepo "github.com/cfif1982/eds/internal/eds/repositories/document"
@@ -20,11 +19,8 @@ import (
 const dbConnFormat = "host=%s user=%s password=%s dbname=%s sslmode=disable"
 
 type Bootstraper struct {
-	cfg        *config.Config
-	log        *slog.Logger
-	grpcSrv    *server.Server
-	controller *controller.Controller
-	handlers   *handlers.Handlers
+	cfg *config.Config
+	log *slog.Logger
 }
 
 func NewBootstraper(cfg *config.Config, log *slog.Logger) *Bootstraper {
@@ -52,18 +48,15 @@ func (b *Bootstraper) Run() {
 
 	// TODO: создать репозиторий для юзера
 
-	// создаем контроллер
-	b.controller = controller.NewController(b.log, docRepo)
-
 	// создаем хэндлеры
-	b.handlers = handlers.NewHandlers(b.log, b.controller)
+	handlers := handlers.NewHandlers(b.log, docRepo)
 
 	// создаем сервер grpc
-	b.grpcSrv = server.NewServer(b.log, b.cfg.GRPC.Port, b.handlers)
+	grpcSrv := server.NewServer(b.log, b.cfg.GRPC.Port, handlers)
 
 	// запускаем сервер в отдельной горутине,
 	// это нужно, для того чтобы слушать сообщения от системы о закрытии приложения - graceful shutdown
-	go b.grpcSrv.MustRun()
+	go grpcSrv.MustRun()
 
 	// graceful shutdown
 	//**************************************
@@ -81,7 +74,7 @@ func (b *Bootstraper) Run() {
 
 	// если данные пришли в канал stop, то нужно завершить приложение
 	// вызываем останов сервера
-	b.grpcSrv.Stop()
+	grpcSrv.Stop()
 
 	b.log.Info("application stoped")
 
