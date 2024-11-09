@@ -1,0 +1,412 @@
+openapi: 3.0.3
+info:
+  title: Electronic Digital Signature
+  description: |-
+    This is an application for signing documents over the network
+  version: 1.0.1
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: document
+    description: document operations
+  - name: user
+    description: users operations
+  - name: admin
+    description: admin operations
+paths:
+  /document:
+    post:
+      tags:
+        - document
+      summary: Add a new document
+      description: Add a new document to the base. Just generate uuid for new document and generate QR-code
+      operationId: addNewDocument
+      requestBody:
+        description: Create a new document in the base
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewDocument"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QRCode"
+        "400":
+          description: Invalid input
+        "422":
+          description: Validation exception
+      security:
+        - api_key: []
+    put:
+      tags:
+        - document
+      summary: Update an existing document
+      description: Update an existing document by uuid
+      operationId: updateDocument
+      requestBody:
+        description: Update an existent document in the base
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/DocumentUpload"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Document not found
+        "422":
+          description: Validation exception
+      security:
+        - api_key: []
+  /document/{documentUUID}:
+    get:
+      tags:
+        - document
+      summary: Find document by uuid
+      description: Returns a single document
+      operationId: getDocumentByUUID
+      parameters:
+        - name: documentUUID
+          in: path
+          description: ID of document to return
+          required: true
+          schema:
+            type: integer
+            format: byte16
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Document not found
+      security:
+        - api_key: []
+    delete:
+      tags:
+        - document
+      summary: Deletes a document
+      description: mark document for delete
+      operationId: deleteDocument
+      parameters:
+        - name: documentUUID
+          in: path
+          description: document uuid to delete
+          required: true
+          schema:
+            type: integer
+            format: byte16
+      responses:
+        "400":
+          description: Invalid document value
+      security:
+        - api_key: []
+  /user/signature:
+    post:
+      tags:
+        - user
+      summary: sign a document
+      description: sign a document
+      operationId: signDocument
+      requestBody:
+        description: sign a document
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Signature"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+        "400":
+          description: Invalid input
+        "422":
+          description: Validation exception
+      security:
+        - api_key: []
+    # добавить проверку подписи
+  /user/correct:
+    put:
+      tags:
+        - user
+      summary: send document to correction
+      description: send document to correction
+      operationId: sendDocumentToCorrection
+      requestBody:
+        description: send document to correction
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentCorrect"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+        "400":
+          description: Invalid input
+        "422":
+          description: Validation exception
+      security:
+        - api_key: []
+  /admin/user:
+    post:
+      tags:
+        - admin
+      summary: Add a new user
+      description: Add a new user to the base
+      operationId: addNewUser
+      requestBody:
+        description: Create a new user in the base
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewUser"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid input
+        "422":
+          description: Validation exception
+      security:
+        - api_key: []
+    put:
+      tags:
+        - admin
+      summary: Update an existing user
+      description: Update an existing user by uuid
+      operationId: updateUser
+      requestBody:
+        description: Update an existent user in the base
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: User not found
+        "422":
+          description: Validation exception
+      security:
+        - api_key: []
+  /admin/user/{userUUID}:
+    get:
+      tags:
+        - admin
+      summary: Find user by uuid
+      description: Returns a single user
+      operationId: getUserByUUID
+      parameters:
+        - name: userUUID
+          in: path
+          description: UUID of user to return
+          required: true
+          schema:
+            type: integer
+            format: byte16
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid UUID supplied
+        "404":
+          description: User not found
+      security:
+        - api_key: []
+    delete:
+      tags:
+        - admin
+      summary: Deletes a user
+      description: delete a user
+      operationId: deleteUser
+      parameters:
+        - name: userUUID
+          in: path
+          description: User uuid to delete
+          required: true
+          schema:
+            type: integer
+            format: byte16
+      responses:
+        "400":
+          description: Invalid user value
+      security:
+        - api_key: []
+components:
+  schemas:
+    NewDocument:
+      type: object
+      properties:
+        creator_id:
+          type: string
+          format: uuid
+          example: 53aa35c8-e659-44b2-882f-f6056e443c99
+    QRCode:
+      type: object
+      properties:
+        qr_code:
+          type: string
+          example: /21aa35c8-e659-44b2-882f-f6056e443a33/qr.jpg
+    DocumentUpload:
+      type: object
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+            example:
+              - "main_file.doc"
+              - "app.doc"
+        metadata:
+          type: object
+          properties:
+            document_id:
+              type: string
+              format: uuid
+              example: 21aa35c8-e659-44b2-882f-f6056e443a33
+            creator_id:
+              type: string
+              format: uuid
+              example: 53aa35c8-e659-44b2-882f-f6056e443c99
+            signers_id:
+              type: array
+              items:
+                type: string
+                format: uuid
+                example:
+                  - 64aa35c8-e659-44b2-882f-f6056e443e88
+                  - 75aa35c8-e659-44b2-882f-f6056e443d67
+    Document:
+      type: object
+      properties:
+        document_id:
+          type: string
+          format: uuid
+          example: 21aa35c8-e659-44b2-882f-f6056e443a33
+        creator_id:
+          type: string
+          format: uuid
+          example: 53aa35c8-e659-44b2-882f-f6056e443c99
+        signers_id:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example:
+              - 64aa35c8-e659-44b2-882f-f6056e443e88
+              - 75aa35c8-e659-44b2-882f-f6056e443d67
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+            example:
+              - "main_file.doc"
+              - "app.doc"
+        signatures:
+          type: array
+          items:
+            type: string
+            format: binary
+            example:
+              - "main_file.key"
+              - "app.key"
+    DocumentCorrect:
+      type: object
+      properties:
+        document_id:
+          type: string
+          format: uuid
+          example: 21aa35c8-e659-44b2-882f-f6056e443a33
+        message:
+          type: string
+          example: "change document number"
+    Signature:
+      type: object
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+            example:
+              - "main_file.key"
+              - "app.key"
+        metadata:
+          type: object
+          properties:
+            document_id:
+              type: string
+              format: uuid
+              example: 53aa35c8-e659-44b2-882f-f6056e443c99
+            signer_id:
+              type: string
+              format: uuid
+              example: 64aa35c8-e659-44b2-882f-f6056e443e88
+    NewUser:
+      type: object
+      properties:
+        email:
+          type: string
+          example: john@email.com
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 53aa35c8-e659-44b2-882f-f6056e443c99
+        email:
+          type: string
+          example: john@email.com
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header

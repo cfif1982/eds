@@ -24,3 +24,5 @@ vendor/
 
 # other files
 requests.http
+
+config/local.yaml

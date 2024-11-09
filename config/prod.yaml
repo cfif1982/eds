@@ -1,0 +1,10 @@
+env: "prod" # local, prod
+maigration_folder: "./migrations" # папка с миграциями
+grpc:
+  port: 44441
+database:
+  user: "postgres"
+  password: "123"
+  host: db
+  table: "eds"
+  request_timeout: 5

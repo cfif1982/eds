@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  # Описание вашего приложения (например, Go-приложения)
+  app:
+    image: eds_app:v6
+    build: . # Строит образ из текущей директории, используя Dockerfile
+    ports:
+      - "44441:44441" # Пробрасываем порт 8080 на хост
+    environment: # Переменные окружения для вашего приложения
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: eds
+      POSTGRES_HOST: db # Ссылка на сервис базы данных
+    depends_on:
+      - db # Говорим, что app зависит от db, т.е. сначала запускается db
+    volumes:
+      - .:/app # Пробрасываем код приложения в контейнер (для разработки)
+
+  # Описание базы данных (например, PostgreSQL)
+  db:
+    image: postgres:15 # Используем готовый образ PostgreSQL
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: eds
+    ports:
+      - "5432:5432" # Пробрасываем порт 5432 для доступа к базе данных
+    volumes:
+      - pgdata:/var/lib/postgresql/data # Храним данные БД на хосте
+
+volumes:
+  pgdata:
