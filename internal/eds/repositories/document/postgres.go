@@ -8,7 +8,6 @@ import (
 )
 
 // const dbConnFormat = "host=%s user=%s password=%s dbname=%s sslmode=disable"
-
 type PostgresRepo struct {
 	log        *slog.Logger
 	db         *sql.DB

@@ -14,6 +14,7 @@ import (
 	"github.com/cfif1982/eds/internal/eds/infrastructure/handlers"
 	"github.com/cfif1982/eds/internal/eds/infrastructure/server"
 	docRepo "github.com/cfif1982/eds/internal/eds/repositories/document"
+	docUseCases "github.com/cfif1982/eds/internal/eds/useCases/document"
 )
 
 const dbConnFormat = "host=%s user=%s password=%s dbname=%s sslmode=disable"
@@ -48,8 +49,11 @@ func (b *Bootstraper) Run() {
 
 	// TODO: создать репозиторий для юзера
 
+	// создаем UseCases для работы с документами
+	docUseCases := docUseCases.NewUseCases(b.log, docRepo)
+
 	// создаем хэндлеры
-	handlers := handlers.NewHandlers(b.log, docRepo)
+	handlers := handlers.NewHandlers(b.log, docUseCases)
 
 	// создаем сервер grpc
 	grpcSrv := server.NewServer(b.log, b.cfg.GRPC.Port, handlers)

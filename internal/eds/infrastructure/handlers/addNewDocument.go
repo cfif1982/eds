@@ -47,18 +47,6 @@ func (h *Handlers) AddNewDocument(
 		QrCode: qrCode,
 	}
 
-	// return &result, nil
-
-	// result, err := h.controller.AddNewDocument(req.GetCreatorId())
-	// if err != nil {
-	// 	// TODO: тут нужно доабваить более широкую обработку ошибки
-	// 	// Например, такой пользователь уже существует и т.д.
-	// 	// здесь конкретно это не нужно, но на будущее себе пометил
-
-	// 	// Если возникла ошибка, то возвращаем код - codes.Internal
-	// 	return nil, status.Error(codes.Internal, "internal error")
-	// }
-
 	return result, nil
 }
 

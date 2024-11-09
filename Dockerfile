@@ -8,14 +8,16 @@ WORKDIR /app
 COPY . .
 
 # Загружаем зависимости и собираем проект
-RUN go mod tidy
-RUN go build -o eds  ./cmd/eds
+RUN make tidy
+RUN make build_migrator_linux
+RUN make build_eds_linux
 
 # Используем минимальный образ для выполнения собранного приложения
 FROM debian:bookworm-slim
 
 # Копируем собранный бинарник из предыдущего контейнера
 COPY --from=build /app/eds /usr/local/bin/eds
+COPY --from=build /app/migrator /usr/local/bin/migrator
 
 # Копируем файл конфигурации
 COPY --from=build /app/config/prod.yaml /usr/local/bin/prod.yaml
@@ -26,7 +28,10 @@ COPY --from=build /app/migrations /usr/local/bin/migrations
 # Указываем рабочую директорию
 WORKDIR /usr/local/bin
 
-# Определяем команду, которая будет выполнена при запуске контейнера
+# запускаем мигратора
+RUN ./migrator --config ./prod.yaml
+
+# Определяем команду, которая будет выполнена при запуске контейнера и при закрытии которой будет закрыватьс контейнер
 # CMD ["eds", "--config ./srv.yaml"] - такой синтаксис неправильно принимает аргументы командной строки
 CMD eds --config ./prod.yaml
 
