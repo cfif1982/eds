@@ -28,9 +28,6 @@ func NewServer(
 	// подключаем наши хэндлеры
 	edsv1.RegisterEDSServer(gRPCServer, handlers)
 
-	// подключаем наш обработчик
-	// edsgrpc.Register(gRPCServer, handlers)
-
 	return &Server{
 		log:        log,
 		gRPCServer: gRPCServer,

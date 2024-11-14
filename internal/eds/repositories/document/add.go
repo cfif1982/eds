@@ -18,7 +18,6 @@ func (b *PostgresRepo) Add(doc *models.Document) error {
 	psq := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	// создаем запрос на добавление документа
-	// Q: нужно ли здесь указывать все поля из модели?
 	query, args, _ := psq.
 		Insert("documents").Columns("id", "creator_id", "date").
 		Values(doc.ID(), doc.Creator(), doc.Date()).
@@ -31,7 +30,7 @@ func (b *PostgresRepo) Add(doc *models.Document) error {
 	// выполняю запрос
 	_, err := b.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		// проверяем ошибку на предмет вставки маршрута с названием, которое уже есть в БД
+		// проверяем ошибку
 		// создаем объект *pgconn.PgError - в нем будет храниться код ошибки из БД
 		var pgErr *pgconn.PgError
 

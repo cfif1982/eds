@@ -1,13 +1,13 @@
 version: "3.8"
 
 services:
-  # Описание вашего приложения (например, Go-приложения)
+  # мое приложение
   app:
     image: eds_app:v6
     build: . # Строит образ из текущей директории, используя Dockerfile
     ports:
-      - "44441:44441" # Пробрасываем порт 8080 на хост
-    environment: # Переменные окружения для вашего приложения
+      - "44441:44441" # Пробрасываем порт 44441 на хост для работы grpc сервера
+    environment: # Переменные окружения для приложения
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123
       POSTGRES_DB: eds
@@ -15,12 +15,13 @@ services:
     depends_on:
       - db # Говорим, что app зависит от db, т.е. сначала запускается db
     volumes:
+      # Q: не понял для чего это нужно
       - .:/app # Пробрасываем код приложения в контейнер (для разработки)
 
-  # Описание базы данных (например, PostgreSQL)
+  # Описание базы данных
   db:
     image: postgres:15 # Используем готовый образ PostgreSQL
-    environment:
+    environment: # Переменные окружения для БД
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123
       POSTGRES_DB: eds
@@ -29,5 +30,53 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data # Храним данные БД на хосте
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest # Образ Zookeeper от Confluent
+    container_name: zookeeper # Имя контейнера
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181 # Порт, на котором будет слушать Zookeeper (по умолчанию 2181)
+      ZOOKEEPER_TICK_TIME: 2000 # Настройка временного интервала Zookeeper
+    ports:
+      - "2181:2181" # Пробрасываем порт Zookeeper наружу для взаимодействия
+    networks:
+      - kafka_network # Контейнер будет работать в общей сети с Kafka
+
+  kafka:
+    image: confluentinc/cp-kafka:latest # Образ Kafka от Confluent
+    container_name: kafka # Имя контейнера Kafka
+    depends_on:
+      - zookeeper # Kafka должна запуститься только после Zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1 # Уникальный идентификатор брокера Kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181 # Адрес Zookeeper, с которым будет связываться Kafka
+      # порты: 9092 - для клиентов, 9093 - для kowl
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL_LISTENER://localhost:9092, PLAINTEXT://kafka:9093 # Адрес и порт, который Kafka будет рекламировать клиентам
+      # Q: тут не до конца понял про разные протоколы. Но чтобы заработал порт 9093 нужно было указать  PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL_LISTENER:PLAINTEXT # протоколы для разных листенеров
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # Число реплик для хранения offset-ов (1, так как у нас один брокер)
+    ports:
+      - "9092:9092" # Пробрасываем порт Kafka для внешних подключений
+    networks:
+      - kafka_network # Kafka будет работать в той же сети, что и Zookeeper
+
+  # Веб-интерфейс Kowl для управления Kafka
+  kowl:
+    image: quay.io/cloudhut/kowl:latest # Образ Kowl — веб-интерфейса для работы с Kafka
+    container_name: kowl # Имя контейнера Kowl
+    ports:
+      - "8080:8080" # Пробрасываем порт для доступа к веб-интерфейсу
+    environment:
+      KOWL_ALLOW_DELETE_TOPIC: "true" # Разрешаем удаление топиков через интерфейс
+      KAFKA_BROKERS: kafka:9093 # Указываем, где находится Kafka для подключения к ней
+    depends_on:
+      - kafka # Kowl запускается только после Kafka
+    networks:
+      - kafka_network # Работает в одной сети с Kafka
+
+networks:
+  kafka_network:
+    driver: bridge # Создаем общую мостовую сеть для взаимодействия контейнеров
+
+# Q: не понял для чего это нужно?
 volumes:
   pgdata:
