@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"log/slog"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -10,34 +11,42 @@ import (
 	"github.com/google/uuid"
 )
 
+// Q: так норм делать?
 const (
-	emptyValueInt = "" // констанат для пустого значения у int. Для удобства чтения кода
+	emptyValueStr = "" // констанат для пустого значения у string. Для удобства чтения кода
 )
 
 func (h *Handlers) AddNewDocument(
 	ctx context.Context,
 	req *edsv1.AddNewDocumentRequest,
 ) (*edsv1.AddNewDocumentResponse, error) {
-	// проверяем входящие данные
-	err := validateAddNewDocument(req)
+	// Q: работа с ошибками.
+	// Проверяем входящий ID создателя документа
+	if req.GetCreatorId() == emptyValueStr {
+		h.log.Error("validation error", slog.String("error", "empty creator id"))
+		return nil, status.Error(codes.InvalidArgument, "creator id required")
+	}
+
+	// конвертируем строку в uuid
+	creatorUUID, err := uuid.Parse(req.GetCreatorId())
+	// Q: работа с ошибками.
+	// Если возникла ошибка, то возвращаем gRPC ошибку
 	if err != nil {
-		return nil, err
+		h.log.Error("parse error", slog.Any("wrong creator id", err))
+		// Если возникла ошибка, то возвращаем код - codes.Internal
+		return nil, status.Error(codes.InvalidArgument, "wrong creator id")
 	}
 
 	// вызываем UseCase добавления документа
+	qrCode, err := h.docUseCases.Add(ctx, creatorUUID)
 
-	// конвертируем данные из grpc в domain
-	// это коммент на тот случай, когда будем больше данных получать
-	// сейчас просто конвертируем строку в uuid
-	creatorUUID, err := uuid.Parse(req.GetCreatorId())
+	// Q: работа с ошибками
 	if err != nil {
-		// Если возникла ошибка, то возвращаем код - codes.Internal
-		return nil, status.Error(codes.Internal, "internal error")
-	}
-
-	qrCode, err := h.docUseCases.Add(creatorUUID)
-
-	if err != nil {
+		// логирую ошибку в хэндлере
+		h.log.Error("add document useCase error", slog.Any("error", err))
+		// здесь проверяем ошибку. Если это одна из моих ошибок из models,
+		// то выводить нужные коды ошибок
+		// if errors.Is(err, models.ErrInvalidUser) || errors.Is(err, models.ErrUserValidation) else
 		// Если возникла ошибка, то возвращаем код - codes.Internal
 		return nil, status.Error(codes.Internal, "internal error")
 	}
@@ -48,22 +57,4 @@ func (h *Handlers) AddNewDocument(
 	}
 
 	return result, nil
-}
-
-// проверяем входящие данные.
-func validateAddNewDocument(req *edsv1.AddNewDocumentRequest) error {
-	// Проверяем входящий ID создателя документа
-	// проверку делаем через геттер - Get...
-	if req.GetCreatorId() == emptyValueInt {
-		// возвращаем встроенные в grpc коды ошибки
-		return status.Error(codes.InvalidArgument, "creator id required")
-	}
-
-	// также проверяем на валидность uuid
-	if _, err := uuid.Parse(req.GetCreatorId()); err != nil {
-		// возвращаем встроенные в grpc коды ошибки
-		return status.Error(codes.InvalidArgument, "wrong creator id")
-	}
-
-	return nil
 }

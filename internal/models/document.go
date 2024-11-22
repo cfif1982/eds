@@ -1,9 +1,19 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+)
+
+// Q: примеры ошибок
+// нужно опрделиться , какие ошибки будуо обрабатываться бизнес логикой и выводиться юзеру
+var (
+	ErrUserNotFound     = errors.New("user not found")
+	ErrInvalidUser      = errors.New("invalid user")
+	ErrUserValidation   = errors.New("validation error")
+	ErrUserAlreadyExist = errors.New("user already exist")
 )
 
 type Document struct {

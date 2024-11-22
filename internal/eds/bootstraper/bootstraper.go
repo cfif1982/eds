@@ -81,5 +81,4 @@ func (b *Bootstraper) Run() {
 	grpcSrv.Stop()
 
 	b.log.Info("application stoped")
-
 }

@@ -13,20 +13,21 @@ RUN make build_migrator_linux
 RUN make build_eds_linux
 
 # Используем минимальный образ для выполнения собранного приложения
-FROM debian:bookworm-slim
+# FROM debian:bookworm-slim
+FROM scratch
+
+# Указываем рабочую директорию
+WORKDIR /app
 
 # Копируем собранный бинарник из предыдущего контейнера
-COPY --from=build /app/eds /usr/local/bin/eds
-COPY --from=build /app/migrator /usr/local/bin/migrator
+COPY --from=build /app/eds /app/eds
+COPY --from=build /app/migrator /app/migrator
 
 # Копируем файл конфигурации
 COPY --from=build /app/config/prod.yaml /usr/local/bin/prod.yaml
 
 # Копируем папку с миграциями
 COPY --from=build /app/migrations /usr/local/bin/migrations
-
-# Указываем рабочую директорию
-WORKDIR /usr/local/bin
 
 # запускаем мигратора
 RUN ./migrator --config ./prod.yaml

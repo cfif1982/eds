@@ -1,15 +1,14 @@
 package document
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/cfif1982/eds/internal/models"
 )
 
-// Q: приходится объявлять этот интерфейс в двух местах: controller и useCases
-// Это правильно?
 type Repo interface {
-	Add(bank *models.Document) error
+	Add(ctx context.Context, bank *models.Document) error
 }
 
 type UseCases struct {

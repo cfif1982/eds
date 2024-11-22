@@ -63,14 +63,18 @@ func (k *GetMailConsumer) Run(ctx context.Context) {
 	go func() {
 		k.log.Info("Ожидание сообщений...")
 		for message := range k.partitionConsumer.Messages() {
-			k.log.Info(messageReceived, string(message.Value), message.Partition, message.Offset)
-			k.checkMessage(ctx, message)
+			mes := fmt.Sprintf(messageReceived, string(message.Value), message.Partition, message.Offset)
+			k.log.Info(mes)
+			err := k.checkMessage(ctx, message)
+			if err != nil {
+				k.log.Error("Ошибка при обработке сообщения: %v", err)
+			}
 		}
 	}()
 }
 
 // проверяем полученное сообщение.
-func (k *GetMailConsumer) checkMessage(ctx context.Context, message *sarama.ConsumerMessage) {
+func (k *GetMailConsumer) checkMessage(ctx context.Context, message *sarama.ConsumerMessage) error {
 	key := string(message.Key)
 
 	switch key {
@@ -95,12 +99,14 @@ func (k *GetMailConsumer) checkMessage(ctx context.Context, message *sarama.Cons
 		err := json.Unmarshal(message.Value, msg)
 
 		if err != nil {
-			k.log.Info("Ошибка при десериализации сообщения: %v", err)
-			return
+
+			return fmt.Errorf("Ошибка при десериализации сообщения: %v", err)
 		}
 
 		// делаем grpc запрос в eds
 		k.client.AddDocument(ctx, msg)
 
 	}
+
+	return nil
 }

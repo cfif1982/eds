@@ -39,12 +39,12 @@ func (b *Bootstraper) Run() {
 	b.log.Info("Start migrating database")
 
 	if err = goose.SetDialect("postgres"); err != nil {
-		b.log.Info(err.Error())
+		b.log.Error(err.Error())
 	}
 
 	err = goose.Up(db, b.cfg.MigrationFolder)
 	if err != nil {
-		b.log.Info(err.Error() + ": " + b.cfg.MigrationFolder)
+		b.log.Error(err.Error() + ": " + b.cfg.MigrationFolder)
 	}
 
 	b.log.Info("migrating database finished")

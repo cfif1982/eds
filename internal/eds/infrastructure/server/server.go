@@ -39,47 +39,37 @@ func NewServer(
 // Must обозначает обязательность выполнения функции.
 // Если она не запустится, то дальше нет смысла работать
 // Поэтому метод Run() мы оборачиваем в MustRun()
-func (a *Server) MustRun() {
-	if err := a.Run(); err != nil {
+func (s *Server) MustRun() {
+	if err := s.Run(); err != nil {
 		panic(err)
 	}
 }
 
 // запуск сервера
-func (a *Server) Run() error {
-	// создаю метку функции для лога, чтобы можно было узнать где была ошибка
-	const op = "grpcapp.Run"
-
-	// добавляем эту метку в логгер.
-	// Теперь во всех логах этого пакета будет эта метка
-	log := a.log.With(slog.String("op", op))
-
+func (s *Server) Run() error {
 	// grpc работает на низком уровне - TCP.
 	// Поэтому для его работы нужен слушатель порта для этого протокола
 	// для этого создаем слушатель порта
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.port))
 
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("listener init error: %w", err)
 	}
 
-	log.Info("grpc server is running", slog.String("addr", listener.Addr().String()))
+	s.log.Info("grpc server is running", slog.String("addr", listener.Addr().String()))
 
 	// запускаем сервер
 	// т.е. указываем серверу обрабатывать запросы, которые приходят на указанный в слушателе адрес
-	if err = a.gRPCServer.Serve(listener); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+	if err = s.gRPCServer.Serve(listener); err != nil {
+		return fmt.Errorf("gRPC server start error: %w", err)
 	}
 
 	return nil
 }
 
 // остановка сервера
-func (a *Server) Stop() {
-	const op = "grps.Stop"
+func (s *Server) Stop() {
+	s.log.Info("stopping grpc server", slog.Int("port", s.port))
 
-	a.log.With(slog.String("op", op)).
-		Info("stopping grpc server", slog.Int("port", a.port))
-
-	a.gRPCServer.GracefulStop()
+	s.gRPCServer.GracefulStop()
 }
