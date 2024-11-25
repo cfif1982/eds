@@ -18,7 +18,7 @@ func (b *PostgresRepo) Add(ctx context.Context, doc *models.Document) error {
 	// создаем запрос на добавление документа
 	query, args, _ := psq.
 		Insert("documents").Columns("id", "creator_id", "date").
-		Values(doc.ID(), doc.Creator(), doc.Date()).
+		Values(doc.ID, doc.Creator, doc.Date).
 		ToSql()
 
 	// создаю контекст для запроса

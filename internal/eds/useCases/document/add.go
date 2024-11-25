@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/cfif1982/eds/internal/models"
 	"github.com/google/uuid"
@@ -11,7 +12,18 @@ import (
 
 func (u *UseCases) Add(ctx context.Context, creatorID uuid.UUID) (string, error) {
 	// создаем документ
-	doc := models.CreateDocument(creatorID)
+	var signers []uuid.UUID
+	uuid := uuid.New()
+	files := []models.File{}
+
+	doc := models.NewDocument(
+		uuid,
+		creatorID,
+		signers,
+		files,
+		false,
+		time.Now(),
+	)
 
 	// сохраняем документ в БД
 	err := u.repo.Add(ctx, doc)

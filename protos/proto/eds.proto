@@ -17,6 +17,16 @@ message AddNewDocumentResponse{
   string qr_code = 1;
 } 
 
+message SendDocumentRequest{
+  string document_id = 1;
+  repeated string signers_mail = 2;
+  repeated string files_url = 3;
+} 
+
+message SendDocumentResponse{
+  bool success = 1;
+}
+
 message GetDocumentByIDRequest{
   string document_id = 1;
 } 

@@ -7,7 +7,9 @@ import (
 	"github.com/cfif1982/eds/internal/config"
 )
 
-// const dbConnFormat = "host=%s user=%s password=%s dbname=%s sslmode=disable"
+// Q: мне кажется, что нужно поменять структуру репозитория.
+// Нужно сделать папку postgres. В ней уже папку document и user.
+// Или прям в postgres хранить все файлы для работы с документами и юзерами
 type PostgresRepo struct {
 	log        *slog.Logger
 	db         *sql.DB
