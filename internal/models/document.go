@@ -1,18 +1,29 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 )
 
+// Q: примеры ошибок
+// нужно опрделиться , какие ошибки будуо обрабатываться бизнес логикой и выводиться юзеру
+var (
+	ErrDocumentNotFound     = errors.New("document not found")
+	ErrDocumentAlreadyExist = errors.New("document already exist")
+)
+
+// Q: ну и тут тоже вопрос - по DDD поле Files нужно хранить как список объектов File. Но можно же хранить и как список id этих файлов
+// как лучше то хранить тогда?
+// ведь подписантов мы храним как список id, т.к. в ddd это должны были быть агрегаты, а их храним как id
 type Document struct {
-	id      uuid.UUID
-	creator uuid.UUID
-	signers []uuid.UUID
-	files   []File
-	approve bool
-	date    time.Time
+	ID      uuid.UUID
+	Creator uuid.UUID
+	Signers []uuid.UUID
+	Files   []File
+	Approve bool
+	Date    time.Time
 }
 
 func NewDocument(
@@ -24,50 +35,11 @@ func NewDocument(
 	date time.Time,
 ) *Document {
 	return &Document{
-		id:      id,
-		creator: creator,
-		signers: signers,
-		files:   files,
-		approve: approve,
-		date:    date,
+		ID:      id,
+		Creator: creator,
+		Signers: signers,
+		Files:   files,
+		Approve: approve,
+		Date:    date,
 	}
-}
-
-func CreateDocument(creator uuid.UUID) *Document {
-	var signers []uuid.UUID
-	uuid := uuid.New()
-	files := []File{}
-
-	return NewDocument(
-		uuid,
-		creator,
-		signers,
-		files,
-		false,
-		time.Now(),
-	)
-}
-
-func (d *Document) ID() uuid.UUID {
-	return d.id
-}
-
-func (d *Document) Creator() uuid.UUID {
-	return d.creator
-}
-
-func (d *Document) Signers() []uuid.UUID {
-	return d.signers
-}
-
-func (d *Document) Files() []File {
-	return d.files
-}
-
-func (d *Document) Approve() bool {
-	return d.approve
-}
-
-func (d *Document) Date() time.Time {
-	return d.date
 }

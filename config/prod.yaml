@@ -8,3 +8,9 @@ database:
   host: db
   table: "eds"
   request_timeout: 5
+kafka_host: localhost:9092
+clients_cfg:
+  get_mail_consumer:
+    address: "localhost"
+    timeout: 1
+    retries_count: 3
