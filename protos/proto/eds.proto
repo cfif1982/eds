@@ -7,10 +7,12 @@ option go_package = "github.com/cfif1982/eds/pkg/grpc;edsv1";
 service EDS{
   rpc AddNewDocument (AddNewDocumentRequest) returns (AddNewDocumentResponse);
   rpc GetDocumentByID (GetDocumentByIDRequest) returns (GetDocumentByIDResponse);
+  rpc SendDocument (SendDocumentRequest) returns (SendDocumentResponse);
+  rpc SignDocument (SignDocumentRequest) returns (SignDocumentResponse);
 }
 
 message AddNewDocumentRequest{
-  string creator_id = 1;
+  string creator_email = 1;
 } 
 
 message AddNewDocumentResponse{
@@ -33,8 +35,23 @@ message GetDocumentByIDRequest{
 
 message GetDocumentByIDResponse{
   string document_id = 1;
-  string creator_id = 2;
-  repeated string signers_id = 3;
-  repeated string files_id = 4;
-  repeated string signatures_id = 5;
+  User creator = 2;
+  repeated User signers = 3;
+  repeated string files_url = 4;
 } 
+
+message SignDocumentRequest{
+  string document_id = 1;
+  string signer_mail = 2;
+  string signature_file_url = 3;
+} 
+
+message SignDocumentResponse{
+  bool success = 1;
+}
+
+message User{
+  string user_id = 1;
+  string user_email = 2;
+  string user_name = 3;
+}

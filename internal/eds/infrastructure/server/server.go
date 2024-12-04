@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/cfif1982/eds/internal/eds/infrastructure/handlers"
+	docHandlers "github.com/cfif1982/eds/internal/eds/infrastructure/handlers/document"
 	edsv1 "github.com/cfif1982/eds/protos/gen"
 	"google.golang.org/grpc"
 )
@@ -20,13 +20,13 @@ type Server struct {
 func NewServer(
 	log *slog.Logger,
 	port int,
-	handlers *handlers.Handlers,
+	docHandlers *docHandlers.Handlers,
 ) *Server {
 	// создаем grpc сервер
 	gRPCServer := grpc.NewServer()
 
 	// подключаем наши хэндлеры
-	edsv1.RegisterEDSServer(gRPCServer, handlers)
+	edsv1.RegisterEDSServer(gRPCServer, docHandlers)
 
 	return &Server{
 		log:        log,

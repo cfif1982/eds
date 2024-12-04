@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
+
 	sq "github.com/Masterminds/squirrel"
 
 	"github.com/cfif1982/eds/internal/models"
 )
 
 // добавить документ
-func (b *PostgresRepo) Add(ctx context.Context, doc *models.Document) error {
+func (r *PostgresRepo) Add(ctx context.Context, doc *models.Document) error {
 	// настраиваем squirrel для работы с postgres
 	psq := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
@@ -22,23 +25,25 @@ func (b *PostgresRepo) Add(ctx context.Context, doc *models.Document) error {
 		ToSql()
 
 	// создаю контекст для запроса
-	ctxTimeout, cancel := context.WithTimeout(ctx, time.Duration(b.reqTimeOut)*time.Second)
+	ctxTimeout, cancel := context.WithTimeout(ctx, time.Duration(r.reqTimeOut)*time.Second)
 	defer cancel()
 
 	// выполняю запрос
-	_, err := b.db.ExecContext(ctxTimeout, query, args...)
+	_, err := r.db.ExecContext(ctxTimeout, query, args...)
 
-	// Q: работа с ошибками
-	// оборачиываю ошибку и возвращаю наверх в useCase
+	// Q: правильно обрабатываю ошибку?
+	// оборачиываю ошибку и возвращаю наверх в servise
 	if err != nil {
-		// у меня в models есть свои ошибки, например например models.ErrUserNotFound
-		// здесь мне нужно проверить - полученная ошибка - это ошибка пользователь не найден
-		// если да, то возвращаю models.ErrUserNotFound, если нет, то оборачиваю полученную ошибку в текст
-		// if err == ошибка юезр не найден{return models.ErrUserNotFound} else
-		// либо же здесь это не проверять, а просто вернуть ошибку выше - пусть там разбираются
-		// но с другой стороны - это неправильно. Зачем слою выше знать об ошибках репозитория
-		// я могу поменять репозиторий и тогда придется там менять логику обработки ошибки
-		return fmt.Errorf("failed to add document, repo error: %w", err)
+		// для проверки ошибок Postgres использую пакет github.com/jackc/pgerrcode.
+		// проверяем имеет ли ошибка тип *pgconn.PgError
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			// если ошибка: запись уже существует
+			if pgErr.Code == pgerrcode.UniqueViolation {
+				return models.ErrDocumentAlreadyExists
+			}
+		}
+
+		return fmt.Errorf("Add() document repo error: %w", err)
 	}
 
 	return nil

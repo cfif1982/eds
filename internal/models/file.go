@@ -3,7 +3,17 @@ package models
 import "github.com/google/uuid"
 
 type File struct {
-	id         uuid.UUID
-	fileName   string
-	signatures []Signature
+	ID       uuid.UUID
+	FileName string
+}
+
+func NewFile(
+	id uuid.UUID,
+	url string,
+) *File {
+
+	return &File{
+		ID:       id,
+		FileName: url,
+	}
 }

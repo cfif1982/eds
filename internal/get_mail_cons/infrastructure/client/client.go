@@ -66,14 +66,14 @@ func InterseptorLogger(l *slog.Logger) grpclog.Logger {
 	})
 }
 
-func (c *Client) AddDocument(ctx context.Context, creatorID string) error {
+func (c *Client) AddDocument(ctx context.Context, creatorEmail string) error {
 	const op = "grpc.AddDocument"
 
 	// нам здесь не нужен результат запроса
 	// важно понять, что запрос отработал без ошибок
 	// результат запроса будет отправлен в кафку в SendMessageQueue
 	_, err := c.gRPCClient.AddNewDocument(ctx, &edsv1.AddNewDocumentRequest{
-		CreatorId: creatorID,
+		CreatorEmail: creatorEmail,
 	})
 
 	if err != nil {

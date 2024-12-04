@@ -14,3 +14,4 @@ clients_cfg:
     address: "localhost:44441" # подключаемся к серверу grpc
     timeout: 1
     retries_count: 3
+# TODO добавить настройки для S3

@@ -1,12 +1,14 @@
-package handlers
+package documents
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/cfif1982/eds/internal/models"
 	edsv1 "github.com/cfif1982/eds/protos/gen"
 	"github.com/google/uuid"
 )
@@ -15,9 +17,8 @@ func (h *Handlers) SendDocument(
 	ctx context.Context,
 	req *edsv1.SendDocumentRequest,
 ) (*edsv1.SendDocumentResponse, error) {
-	// Q: работа с ошибками.
 	// Проверяем входящий ID создателя документа
-	if req.GetDocumentId() == emptyValueStr {
+	if req.GetDocumentId() == "" {
 		h.log.Error("validation error", slog.String("error", "empty document id"))
 		return nil, status.Error(codes.InvalidArgument, "document id required")
 	}
@@ -36,7 +37,6 @@ func (h *Handlers) SendDocument(
 
 	// конвертируем строку в uuid
 	documentUUID, err := uuid.Parse(req.GetDocumentId())
-	// Q: работа с ошибками.
 	// Если возникла ошибка, то возвращаем gRPC ошибку
 	if err != nil {
 		h.log.Error("parse error", slog.Any("wrong document id", err))
@@ -44,23 +44,27 @@ func (h *Handlers) SendDocument(
 		return nil, status.Error(codes.InvalidArgument, "wrong document id")
 	}
 
-	// вызываем UseCase отправки документа
-	err = h.docUseCases.Send(
+	// вызываем Сервис отправки документа
+	err = h.services.SendDocument(
 		ctx,
 		documentUUID,
 		req.GetSignersMail(),
 		req.GetFilesUrl(),
 	)
 
-	// Q: работа с ошибками
 	if err != nil {
 		// логирую ошибку в хэндлере
-		h.log.Error("send document useCase error", slog.Any("error", err))
-		// здесь проверяем ошибку. Если это одна из моих ошибок из models,
-		// то выводить нужные коды ошибок
-		// if errors.Is(err, models.ErrInvalidUser) || errors.Is(err, models.ErrUserValidation) else
-		// Если возникла ошибка, то возвращаем код - codes.Internal
-		return nil, status.Error(codes.Internal, "internal error")
+		h.log.Error("SendDocument() handler error", slog.Any("error", err))
+
+		// Q: так нужно возвращать ошибки юзеру?
+		switch {
+		case errors.Is(err, models.ErrDocumentNotFound):
+			return nil, status.Error(codes.Internal, "document not found")
+		case errors.Is(err, models.ErrUserNotFound):
+			return nil, status.Error(codes.Internal, "user not found")
+		default:
+			return nil, status.Error(codes.Internal, "internal error")
+		}
 	}
 
 	// конвертируем данные из domain в grpc для ответа.

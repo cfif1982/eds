@@ -1,6 +1,7 @@
 package bootstraper
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log/slog"
@@ -10,11 +11,17 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+
 	"github.com/cfif1982/eds/internal/config"
-	"github.com/cfif1982/eds/internal/eds/infrastructure/handlers"
+	docHandlers "github.com/cfif1982/eds/internal/eds/infrastructure/handlers/document"
 	"github.com/cfif1982/eds/internal/eds/infrastructure/server"
 	docRepo "github.com/cfif1982/eds/internal/eds/repositories/document"
-	docUseCases "github.com/cfif1982/eds/internal/eds/useCases/document"
+	fileRepo "github.com/cfif1982/eds/internal/eds/repositories/file"
+	metaRepo "github.com/cfif1982/eds/internal/eds/repositories/filemeta"
+	userRepo "github.com/cfif1982/eds/internal/eds/repositories/user"
+	docServices "github.com/cfif1982/eds/internal/eds/services/document"
 )
 
 const dbConnFormat = "host=%s user=%s password=%s dbname=%s sslmode=disable"
@@ -42,21 +49,52 @@ func (b *Bootstraper) Run() {
 	}
 
 	// создаем репозиторий для документа
-	docRepo, err := docRepo.NewPostgresRepo(b.log, b.cfg, db)
+	dRepo, err := docRepo.NewPostgresRepo(b.log, b.cfg, db)
 	if err != nil {
 		panic("Document Repo error: " + err.Error())
 	}
 
-	// TODO: создать репозиторий для юзера
+	// создаем репозиторий для юзера
+	uRepo, err := userRepo.NewPostgresRepo(b.log, b.cfg, db)
+	if err != nil {
+		panic("User Repo error: " + err.Error())
+	}
 
-	// создаем UseCases для работы с документами
-	docUseCases := docUseCases.NewUseCases(b.log, docRepo)
+	// создаем хранилище s3 для файлов
+	cfgS3, err := awsConfig.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		panic("Ошибка загрузки конфигурации для S3: " + err.Error())
+	}
+
+	// Создание клиента S3
+	s3Client := s3.NewFromConfig(cfgS3)
+
+	// создаем репозиторий для файлов
+	fRepo, err := fileRepo.NewS3Repo(b.log, s3Client)
+	if err != nil {
+		panic("File Repo error: " + err.Error())
+	}
+
+	// создаем репозиторий для мета информации файла
+	mRepo, err := metaRepo.NewPostgresRepo(b.log, b.cfg, db)
+	if err != nil {
+		panic("FileMeta Repo error: " + err.Error())
+	}
+
+	// создаем Services
+	dServices := docServices.NewServices(
+		dRepo,
+		uRepo,
+		mRepo,
+		fRepo,
+		b.log,
+	)
 
 	// создаем хэндлеры
-	handlers := handlers.NewHandlers(b.log, docUseCases)
+	dHandlers := docHandlers.NewHandlers(b.log, dServices)
 
 	// создаем сервер grpc
-	grpcSrv := server.NewServer(b.log, b.cfg.GRPC.Port, handlers)
+	grpcSrv := server.NewServer(b.log, b.cfg.GRPC.Port, dHandlers)
 
 	// запускаем сервер в отдельной горутине,
 	// это нужно, для того чтобы слушать сообщения от системы о закрытии приложения - graceful shutdown

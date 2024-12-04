@@ -7,8 +7,8 @@ import (
 )
 
 type Signature struct {
-	id                uuid.UUID
-	signer            uuid.UUID
-	signatureFileName string
-	date              time.Time
+	ID            uuid.UUID
+	Signer        uuid.UUID
+	SignatureFile string
+	Date          time.Time
 }

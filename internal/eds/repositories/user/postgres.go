@@ -1,4 +1,4 @@
-package document
+package user
 
 import (
 	"database/sql"

@@ -21,6 +21,8 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	EDS_AddNewDocument_FullMethodName  = "/eds.EDS/AddNewDocument"
 	EDS_GetDocumentByID_FullMethodName = "/eds.EDS/GetDocumentByID"
+	EDS_SendDocument_FullMethodName    = "/eds.EDS/SendDocument"
+	EDS_SignDocument_FullMethodName    = "/eds.EDS/SignDocument"
 )
 
 // EDSClient is the client API for EDS service.
@@ -29,6 +31,8 @@ const (
 type EDSClient interface {
 	AddNewDocument(ctx context.Context, in *AddNewDocumentRequest, opts ...grpc.CallOption) (*AddNewDocumentResponse, error)
 	GetDocumentByID(ctx context.Context, in *GetDocumentByIDRequest, opts ...grpc.CallOption) (*GetDocumentByIDResponse, error)
+	SendDocument(ctx context.Context, in *SendDocumentRequest, opts ...grpc.CallOption) (*SendDocumentResponse, error)
+	SignDocument(ctx context.Context, in *SignDocumentRequest, opts ...grpc.CallOption) (*SignDocumentResponse, error)
 }
 
 type eDSClient struct {
@@ -59,12 +63,34 @@ func (c *eDSClient) GetDocumentByID(ctx context.Context, in *GetDocumentByIDRequ
 	return out, nil
 }
 
+func (c *eDSClient) SendDocument(ctx context.Context, in *SendDocumentRequest, opts ...grpc.CallOption) (*SendDocumentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendDocumentResponse)
+	err := c.cc.Invoke(ctx, EDS_SendDocument_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eDSClient) SignDocument(ctx context.Context, in *SignDocumentRequest, opts ...grpc.CallOption) (*SignDocumentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SignDocumentResponse)
+	err := c.cc.Invoke(ctx, EDS_SignDocument_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EDSServer is the server API for EDS service.
 // All implementations must embed UnimplementedEDSServer
 // for forward compatibility.
 type EDSServer interface {
 	AddNewDocument(context.Context, *AddNewDocumentRequest) (*AddNewDocumentResponse, error)
 	GetDocumentByID(context.Context, *GetDocumentByIDRequest) (*GetDocumentByIDResponse, error)
+	SendDocument(context.Context, *SendDocumentRequest) (*SendDocumentResponse, error)
+	SignDocument(context.Context, *SignDocumentRequest) (*SignDocumentResponse, error)
 	mustEmbedUnimplementedEDSServer()
 }
 
@@ -80,6 +106,12 @@ func (UnimplementedEDSServer) AddNewDocument(context.Context, *AddNewDocumentReq
 }
 func (UnimplementedEDSServer) GetDocumentByID(context.Context, *GetDocumentByIDRequest) (*GetDocumentByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDocumentByID not implemented")
+}
+func (UnimplementedEDSServer) SendDocument(context.Context, *SendDocumentRequest) (*SendDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendDocument not implemented")
+}
+func (UnimplementedEDSServer) SignDocument(context.Context, *SignDocumentRequest) (*SignDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignDocument not implemented")
 }
 func (UnimplementedEDSServer) mustEmbedUnimplementedEDSServer() {}
 func (UnimplementedEDSServer) testEmbeddedByValue()             {}
@@ -138,6 +170,42 @@ func _EDS_GetDocumentByID_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EDS_SendDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendDocumentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EDSServer).SendDocument(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EDS_SendDocument_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EDSServer).SendDocument(ctx, req.(*SendDocumentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EDS_SignDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignDocumentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EDSServer).SignDocument(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: EDS_SignDocument_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EDSServer).SignDocument(ctx, req.(*SignDocumentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EDS_ServiceDesc is the grpc.ServiceDesc for EDS service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +220,14 @@ var EDS_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDocumentByID",
 			Handler:    _EDS_GetDocumentByID_Handler,
+		},
+		{
+			MethodName: "SendDocument",
+			Handler:    _EDS_SendDocument_Handler,
+		},
+		{
+			MethodName: "SignDocument",
+			Handler:    _EDS_SignDocument_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

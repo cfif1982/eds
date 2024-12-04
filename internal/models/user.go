@@ -1,6 +1,15 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"errors"
+
+	"github.com/google/uuid"
+)
+
+// нужно опрделиться , какие ошибки будуо обрабатываться бизнес логикой и выводиться юзеру
+var (
+	ErrUserNotFound = errors.New("user not found")
+)
 
 type User struct {
 	ID        uuid.UUID

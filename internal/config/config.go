@@ -13,8 +13,9 @@ type Config struct {
 	GRPC            GRPCConfig    `yaml:"grpc"`                     // настройки grpc
 	DB              Database      `yaml:"database"`                 // настройки базы данных
 	MigrationFolder string        `yaml:"maigration_folder"`        // папка с миграциями
-	ClientsCfg      ClientsConfig `yaml:"clients_cfg"`              // настройки клиентов
+	ClientsCfg      ClientsConfig `yaml:"clients_cfg"`              // настройки клиентов GRPC
 	KafkaHost       string        `yaml:"kafka_host"`
+	S3              S3            `yaml:"s3"`
 }
 
 type GRPCConfig struct {
@@ -37,6 +38,13 @@ type Client struct {
 
 type ClientsConfig struct {
 	GetMail Client `yaml:"get_mail_consumer"`
+}
+
+type S3 struct {
+	Bucket    string `yaml:"bucket"`
+	Region    string `yaml:"region"`
+	AccessKey string `yaml:"access_key"`
+	SecretKey string `yaml:"secret_key"`
 }
 
 // Must говорит о том, что метод должен обязательно запуститься
