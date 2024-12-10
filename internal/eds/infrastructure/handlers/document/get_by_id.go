@@ -1,16 +1,16 @@
-package documents
+package document
 
 import (
 	"context"
 	"errors"
 	"log/slog"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/cfif1982/eds/internal/models"
 	edsv1 "github.com/cfif1982/eds/protos/gen"
-	"github.com/google/uuid"
 )
 
 func (h *Handlers) GetDocumentByID(
@@ -39,7 +39,6 @@ func (h *Handlers) GetDocumentByID(
 		// логирую ошибку в хэндлере
 		h.log.Error("GetDocumentByID() error", slog.Any("error", err))
 
-		// Q: так нужно возвращать ошибки юзеру?
 		switch {
 		case errors.Is(err, models.ErrDocumentNotFound):
 			return nil, status.Error(codes.Internal, "document not found")
@@ -48,32 +47,8 @@ func (h *Handlers) GetDocumentByID(
 		}
 	}
 
-	// Q: как тут конвертировать? откуда брать инфу по юзерам?
-	// конвертируем полученную модель документа в модель grpc
-	// получаем модель user для создалтеля документа
-	// creator := h.services.
-
-	// получаем слайс моделей user для подписантов документа
-	signers := make([]*models.User, 0, len(doc.Signers))
-	for _, id := range doc.Signers {
-		// signer, err := h.services.
-		signers = append(signers, signer)
-	}
-
-	// получаем слайс моделей file для файлов документа
-	files := make([]*models.File, 0, len(doc.Files))
-	for _, id := range doc.Files {
-		// file, err := h.services.
-		files = append(files, file)
-	}
-
 	// конвертируем данные из сервиса в grpc для ответа.
-	result := &edsv1.GetDocumentByIDResponse{
-		DocumentId: doc.ID.String(),
-		Creator:    creator,
-		Signers:    signers,
-		FilesUrl:   files,
-	}
+	result := h.documentToGetDocumentByIDResponse(doc)
 
 	return result, nil
 }

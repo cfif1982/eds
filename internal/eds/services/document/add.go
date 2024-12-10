@@ -20,7 +20,8 @@ func (s *Services) AddDocument(ctx context.Context, creatorEmail string) (string
 
 	// создаем документ
 	var signers []uuid.UUID
-	var files []uuid.UUID
+	var files []models.File
+	var signatures []models.Signature
 	uuid := uuid.New()
 
 	doc := models.NewDocument(
@@ -28,6 +29,7 @@ func (s *Services) AddDocument(ctx context.Context, creatorEmail string) (string
 		user.ID,
 		signers,
 		files,
+		signatures,
 		false,
 		time.Now(),
 	)

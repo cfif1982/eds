@@ -1,4 +1,4 @@
-package documents
+package document
 
 import (
 	"log/slog"

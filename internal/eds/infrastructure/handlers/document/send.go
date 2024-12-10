@@ -1,4 +1,4 @@
-package documents
+package document
 
 import (
 	"context"
@@ -56,7 +56,6 @@ func (h *Handlers) SendDocument(
 		// логирую ошибку в хэндлере
 		h.log.Error("SendDocument() handler error", slog.Any("error", err))
 
-		// Q: так нужно возвращать ошибки юзеру?
 		switch {
 		case errors.Is(err, models.ErrDocumentNotFound):
 			return nil, status.Error(codes.Internal, "document not found")
@@ -67,11 +66,8 @@ func (h *Handlers) SendDocument(
 		}
 	}
 
-	// конвертируем данные из domain в grpc для ответа.
-	// Q: правильный ответ даю? или достаточно было просто вернуть ошибку как nil?
-	result := &edsv1.SendDocumentResponse{
-		Success: true,
-	}
+	// в ответ высылаю пустую структуру, т.к. никаких данных возвращать не нужно
+	result := &edsv1.SendDocumentResponse{}
 
 	return result, nil
 }

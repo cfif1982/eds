@@ -15,10 +15,10 @@ var (
 
 type Document struct {
 	ID         uuid.UUID
-	Creator    uuid.UUID
-	Signers    []uuid.UUID
-	Files      []uuid.UUID
-	Signatures []uuid.UUID
+	CreatorID  uuid.UUID
+	SignersID  []uuid.UUID
+	Files      []File
+	Signatures []Signature
 	Approve    bool
 	Date       time.Time
 }
@@ -27,16 +27,18 @@ func NewDocument(
 	id,
 	creator uuid.UUID,
 	signers []uuid.UUID,
-	files []uuid.UUID,
+	files []File,
+	signatures []Signature,
 	approve bool,
 	date time.Time,
 ) *Document {
 	return &Document{
-		ID:      id,
-		Creator: creator,
-		Signers: signers,
-		Files:   files,
-		Approve: approve,
-		Date:    date,
+		ID:         id,
+		CreatorID:  creator,
+		SignersID:  signers,
+		Files:      files,
+		Signatures: signatures,
+		Approve:    approve,
+		Date:       date,
 	}
 }

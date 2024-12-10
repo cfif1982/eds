@@ -20,7 +20,7 @@ type DocumentRepo interface {
 
 type UserRepo interface {
 	GetByEmail(ctx context.Context, email string) (*models.User, error)
-	// Q: или лучше сделать GetIdByEmail? нам по email так то нужен просто id юзера
+	GetByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 }
 
 // Q: долделать интерфейс

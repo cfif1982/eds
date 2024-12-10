@@ -1,4 +1,4 @@
-package documents
+package document
 
 import (
 	"context"
@@ -40,7 +40,6 @@ func (h *Handlers) AddNewDocument(
 		// логирую ошибку в хэндлере
 		h.log.Error("AddNewDocument() handler error", slog.Any("error", err))
 
-		// Q: так нужно возвращать ошибки юзеру?
 		switch {
 		case errors.Is(err, models.ErrDocumentAlreadyExists):
 			return nil, status.Error(codes.Internal, "document already exist")

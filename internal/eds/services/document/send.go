@@ -13,7 +13,7 @@ func (s *Services) SendDocument(
 	ctx context.Context,
 	documentID uuid.UUID,
 	signersEmail []string,
-	filesURL []string,
+	filePaths []string,
 ) error {
 
 	// TODO удаляем все подписи этого документа из БД
@@ -21,27 +21,17 @@ func (s *Services) SendDocument(
 
 	// т.к. файлы физически уже загружены в s3 или локальное хранилище, то сюда нам переданы только слайс ссылок на эти файлы в s3
 	// тогда нужно пробежаться по этому слайсу и создать объекты файлов
-	files := make([]*models.File, 0, len(filesURL))
-	filesID := make([]uuid.UUID, 0, len(filesURL))
+	files := make([]models.File, 0, len(filePaths))
 
-	for _, url := range filesURL {
+	for _, url := range filePaths {
 		uuid := uuid.New()
 
-		file := &models.File{
-			ID:       uuid,
-			FileName: url,
-		}
+		file := models.NewFile(uuid, url)
 
-		// Q: или тут лучше используя индекс, доабвить в слайс напрямую?
-		// у нас же создан слайс files длинной len(filesURL)
-		files = append(files, file)
-
-		// добавляем id в отдельный слайс
-		filesID = append(filesID, uuid)
+		files = append(files, *file)
 	}
 
 	// получаю слайс id подписантов по их email
-	signers := make([]*models.User, 0, len(signersEmail))
 	signersID := make([]uuid.UUID, 0, len(signersEmail))
 
 	for _, email := range signersEmail {
@@ -51,7 +41,6 @@ func (s *Services) SendDocument(
 			return fmt.Errorf("SendDocument() service error: %w", err)
 		}
 
-		signers = append(signers, user)
 		signersID = append(signersID, user.ID)
 	}
 
@@ -63,15 +52,10 @@ func (s *Services) SendDocument(
 	}
 
 	// меняем параметры документа
-	doc.Files = filesID
-	doc.Signers = signersID
+	doc.Files = files
+	doc.SignersID = signersID
 
 	// сохраняем документ в БД
-	// Q: ну вообще, по DDD - в модели Документ должно быть поле Files []models.File, а не Files []uuid.UUID.
-	// Тогда мы просто передаем в репозиторий модель Документ и говорим, чтобы он эту модель сохранил
-	// сейчас же нужно передать саму модель Документ и слайс моделей Файл, ведь в модели Документ сейчас находится слайс id этих файлов
-	// вопрос вытекает из предыдущего. Нужно ли мне здесь создавать модель Document со всеми данными
-	// и уже эту модель передавать на сохранение или тут можно передать id документа и список id этих файлов и подписантов?
 	err = s.docRepo.Update(ctx, doc)
 
 	if err != nil {
